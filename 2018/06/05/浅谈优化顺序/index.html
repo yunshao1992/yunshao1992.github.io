@@ -1,0 +1,82 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description"><title>浅谈优化顺序 | 云少</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script>var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = 'https://hm.baidu.com/hm.js?' + 'true';
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+  })();
+  </script></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">浅谈优化顺序</h1><a id="logo" href="/.">云少</a><p class="description"></p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/shareto/"><i class="fa fa-stack-overflow"> 分享</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">浅谈优化顺序</h1><div class="post-meta">Jun 5, 2018<span> | </span><span class="category"><a href="/categories/查询优化/">查询优化</a></span></div><div class="post-content"><ul>
+<li>提到sql优化,不要一上来就是加索引,索引增加存储负荷,降低写入效率,而且有时候添加了还不定用得到，所以添加索引不是万灵药。也不是唯一手段，以下从开发者角度与数据库运维角度总结了优化流程，以供大家借鉴。</li>
+</ul>
+<hr>
+<h3 id="优化流程"><a href="#优化流程" class="headerlink" title="优化流程:"></a>优化流程:</h3><ul>
+<li><p>开发角度:<br>  sql语句优化 → 第三方优化 → 索引优化 → 模型优化 → 修改功能</p>
+</li>
+<li><p>运维角度:<br>  数据库配置 → 读写分离 → 虚拟机配置 → 物理机配置</p>
+</li>
+</ul>
+<hr>
+<h3 id="sql语句优化"><a href="#sql语句优化" class="headerlink" title="sql语句优化:"></a>sql语句优化:</h3><ul>
+<li>检测sql是否可以拆分</li>
+<li>分析sql语句执行计划,是否需要添加索引</li>
+<li>样例:<ul>
+<li>sql语句功能: 查询某商品所有评论以及评论匹配到的信息</li>
+<li>sql优化前性能: 数据量达到200万总量查询效率极差,具体表现在4核服务器满cpu运行10分钟未出结果</li>
+</ul>
+</li>
+<li>优化过程:<ol>
+<li>语句拆分，先查询商品所有包含子商品，查询该子商品所有评论 –&gt; 优化结果60s出结果</li>
+<li>针对该语句查询字段建立索引 –&gt; 优化结果20s出结果</li>
+<li>更改数据模型，由原来6个表降低到5个表 –&gt; 优化结果1-8秒出结果(达到公司要求)<h4 id="优缺点-改动量最小，但是优化程度有限"><a href="#优缺点-改动量最小，但是优化程度有限" class="headerlink" title="优缺点: 改动量最小，但是优化程度有限"></a>优缺点: 改动量最小，但是优化程度有限</h4></li>
+</ol>
+</li>
+</ul>
+<h3 id="第三方优化"><a href="#第三方优化" class="headerlink" title="第三方优化:"></a>第三方优化:</h3><ul>
+<li>添加内存数据库-redis</li>
+<li>添加全文搜索引擎-elasticsearch</li>
+<li>添加….</li>
+<li>样例:<ul>
+<li>一个查询所有数据页面，每次用户点都要10s响应，而且点多几次就会占用完连接池</li>
+</ul>
+</li>
+<li>分析原因：<ul>
+<li>通过分析了解到用户只是想看最新的数据情况，极少数会翻页</li>
+</ul>
+</li>
+<li>优化过程<ul>
+<li>使用redis缓存每个用户前几页数据 –&gt; 秒出<h4 id="优缺点-使用灵活-增加运营成本"><a href="#优缺点-使用灵活-增加运营成本" class="headerlink" title="优缺点: 使用灵活,增加运营成本"></a>优缺点: 使用灵活,增加运营成本</h4></li>
+</ul>
+</li>
+</ul>
+<h3 id="索引优化："><a href="#索引优化：" class="headerlink" title="索引优化："></a>索引优化：</h3><ul>
+<li>常用优化手段，就不再多做复述了</li>
+</ul>
+<h3 id="模型优化"><a href="#模型优化" class="headerlink" title="模型优化:"></a>模型优化:</h3><ul>
+<li>模型重构,主要是达到查询减少关联查询</li>
+<li>样例：<ul>
+<li>原来我们查询购买，通过多表关联查询 –&gt; 平均查询20s</li>
+</ul>
+</li>
+<li>优化过程<ul>
+<li>将购买数据拍平成一张表，直接填写相关数据，去掉外键关联 –&gt; 秒出<h4 id="优缺点-影响较大-可极大程度优化"><a href="#优缺点-影响较大-可极大程度优化" class="headerlink" title="优缺点:影响较大,可极大程度优化"></a>优缺点:影响较大,可极大程度优化</h4></li>
+</ul>
+</li>
+</ul>
+<h3 id="修改功能"><a href="#修改功能" class="headerlink" title="修改功能"></a>修改功能</h3><ul>
+<li>在前面那些都无法优化时候就可以考虑修改功能</li>
+<li>样例：<ul>
+<li>分页时前端需要数据count来计算中的总页码，然而很多时候查询卡在sql count这里</li>
+</ul>
+</li>
+<li>优化过程<ul>
+<li>采用类似百度分页效果，一次显示10页页码，不足的以实际稳准，在mysql查询中可通过limit a,b实现该效果，同时可以配合redis提前缓存其他分页数据,即提高了效率,又解决问题<h4 id="优缺点-改动量最大-可最大程度优化"><a href="#优缺点-改动量最大-可最大程度优化" class="headerlink" title="优缺点:改动量最大,可最大程度优化"></a>优缺点:改动量最大,可最大程度优化</h4></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="建议："><a href="#建议：" class="headerlink" title="建议："></a>建议：</h3><p>详细设计时,应该针对模型进行评审,评审应该从主要功能查询出发,检验模型是否可以高效支持查询。</p>
+<ol>
+<li>尽量减少关联查询</li>
+<li>不拘泥于设计范式</li>
+</ol>
+</div><div class="tags"><a href="/tags/查询优化/">查询优化</a></div><div class="post-nav"><a class="pre" href="/2018/06/15/浅谈项目流程/">浅谈项目流程</a><a class="next" href="/2018/06/01/创业公司/">关于创业公司两三事</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="http://yoursite.com"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/我说-你听/">我说-你听</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/查询优化/">查询优化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/项目管理/">项目管理</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/创业公司/" style="font-size: 15px;">创业公司</a> <a href="/tags/初窥管理/" style="font-size: 15px;">初窥管理</a> <a href="/tags/查询优化/" style="font-size: 15px;">查询优化</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2018/07/01/hello-world/">Hello World</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/06/15/浅谈项目流程/">浅谈项目流程</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/06/05/浅谈优化顺序/">浅谈优化顺序</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/06/01/创业公司/">关于创业公司两三事</a></li></ul></div></div></div><div class="pure-u-1 pure-u-md-3-4"></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
